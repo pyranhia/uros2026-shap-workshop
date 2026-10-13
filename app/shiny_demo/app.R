@@ -1,22 +1,15 @@
-# Shiny demo app -- SHAP values
+# Shiny demo app: SHAP values
 # 4 tabs: Break-down, SHAP waterfall, SHAP summary (all DALEX, predicted
-# probability) and shapviz (TreeSHAP, log-odds)
+# probability) and shapviz (TreeSHAP, log-odds).
 #
 # Tabs 1 to 3 only look things up: pre-selected observations, precomputed
-# SHAP values AND precomputed break_down objects,
-# nothing is computed live.
-# This matters for responsiveness: predict_parts(type = "break_down")
-# is fast per call but was previously being re-run on every click
-# (observation change, order change, and *twice* for "Reverse of that
-# order", since that option needs the default order first); with only
-# 12 dropdown observations x 3 orders (36 objects total), precomputing
-# all of them offline is cheap and turns every interaction into an
+# SHAP values and precomputed break_down objects (12 observations x 3
+# variable orders). Nothing is computed live, so every interaction is an
 # instant lookup.
 #
-# Tab 4 (shapviz) is the one exception: it redraws a shapviz plot on
-# every change of its controls, from `sv` (exact TreeSHAP, precomputed)
-# subsampled once at startup. It is on the log-odds scale, unlike the
-# other tabs, and says so in a banner.
+# Tab 4 (shapviz) redraws a shapviz plot on every change of its controls,
+# from `sv` (exact TreeSHAP, precomputed), subsampled once at startup. It
+# is on the log-odds scale, unlike the other tabs, and says so in a banner.
 
 library(shiny)
 library(bslib)
@@ -55,42 +48,28 @@ order_choices <- setNames(
 )
 
 # ------------------------------------------------------------
-# Custom plots, replacing DALEX's plot() and shapviz's sv_waterfall()/
-# sv_importance() defaults, in the same visual style used in the ML
-# training's jour_3 course notes (doc_jour_3.qmd): a cumulative
-# point-and-segment "path" for the break-down tab (taken directly from
-# jour_3's break-down plot code), a horizontal bar chart for the SHAP
-# waterfall tab, and a colour-graded jitter beeswarm for the global
-# summary (both adapted from jour_3's own SHAP plots). All three use
-# the same #6BAED6 (positive) / #F17D52 (negative) contribution colours
-# as jour_3 and a larger base font size (18pt, vs ggplot2's default
-# ~11pt) so the app reads clearly when projected during the tutorial.
+# Custom plots, replacing the default DALEX plot() and shapviz
+# sv_waterfall()/sv_importance(): a cumulative point-and-segment path for
+# the break-down tab, a horizontal bar chart for the SHAP waterfall tab and
+# a colour-graded jitter beeswarm for the global summary. They share one
+# palette (#6BAED6 positive, #F17D52 negative) and a large base font size,
+# so the app reads clearly when projected.
 #
-# All three tabs are now in predicted-probability units. Break-down
-# always was (predict_parts(type = "break_down") via an explainer that
-# predicts probabilities). The waterfall and summary tabs used to be
-# built from `sv`, exact TreeSHAP computed directly on the LightGBM
-# booster -- fast, but on the model's raw/link
-# (log-odds) scale, since SHAP's additivity property only holds
-# cleanly on a model's native additive scale, not after a nonlinear
-# link function. That meant the waterfall tab's axis and, since
-# logit -> probability is a nonlinear transform, sometimes even its
-# ranking of which variable mattered most for a given observation,
-# didn't match break-down's. `shap_indiv` and `shap_summary` (loaded
-# above from shap_values.rds) are precomputed instead with
-# predict_parts(type = "shap") -- sampling of 25 random orderings, via the same
-# probability-predicting explainer used for break-down -- so all three
-# tabs are now directly comparable when switching between them for the
-# same observation.
+# The first three tabs are all in predicted-probability units, so they are
+# directly comparable for the same observation. Break-down comes from
+# predict_parts(type = "break_down"); `shap_indiv` and `shap_summary`
+# (loaded above from shap_values.rds) come from predict_parts(type = "shap"),
+# a sampling of 25 random orderings, with the same probability-predicting
+# explainer. TreeSHAP (tab 4) is on the log-odds scale instead.
 # ------------------------------------------------------------
 
 # Base font size of every plot: large, so the app reads clearly when
 # projected during the tutorial.
 BASE_SIZE <- 22
 
-# Plot colours, shared by every tab: the jour_3 contribution palette,
-# brand navy for text and single-colour marks, a soft grey-blue for
-# grid and reference lines.
+# Plot colours, shared by every tab: contribution palette, brand navy for
+# text and single-colour marks, a soft grey-blue for grid and reference
+# lines.
 COL_POS <- "#6BAED6"
 COL_NEG <- "#F17D52"
 COL_TEXT <- "#0A3D62"
@@ -130,12 +109,8 @@ theme_app <- function(...) {
     )
 }
 
-# Break-down plot: adapted directly from doc_jour_3.qmd's custom
-# break-down plot code (same source object shape -- both come from
-# predict_parts(type = "break_down"), so no data-shape changes needed,
-# just wrapped in a function since the app needs to redraw this for
-# whichever observation/order is currently selected, not a single
-# fixed example).
+# Break-down plot: a cumulative point-and-segment path. Wrapped in a function
+# because the app redraws it for whichever observation and order is selected.
 plot_breakdown_custom <- function(bd) {
   bd_data <- bd |>
     as.data.frame() |>
@@ -190,18 +165,13 @@ plot_breakdown_custom <- function(bd) {
 }
 
 # SHAP waterfall: a simple horizontal bar per variable, coloured by
-# direction with the same palette as the break-down plot. jour_3's own
-# custom waterfall plot is a geom_boxplot() showing the *distribution*
-# of each variable's contribution across the sampled orderings
-# -- shap_obj here (predict_parts(type = "shap"), precomputed) actually has that same per-permutation shape (one
-# row per variable per random path, B = 1..25, plus one averaged row
-# per variable at B == 0), so a boxplot would in principle be possible.
-# We use the averaged row instead (a plain bar, like the summary
-# tab's per-observation values) to keep this tab's reading simple and
-# consistent with the mean-based break-down decomposition next to it;
-# the individual permutation spread is really a separate story (how
-# order-dependent is this variable's effect) from "what's this
-# variable's SHAP contribution."
+# direction with the same palette as the break-down plot. shap_obj
+# (predict_parts(type = "shap"), precomputed) has one row per variable per
+# random path (B = 1..25), plus one averaged row per variable at B == 0.
+# We plot the averaged row (a plain bar) to keep this tab simple and
+# consistent with the mean-based break-down next to it; the spread across
+# orderings is a separate story (how order-dependent a variable's effect
+# is) from "what's this variable's SHAP contribution."
 #
 # The permutation rows are still used for one thing: the precision of
 # that mean. Each bar gets a 95% confidence interval for the Monte Carlo
@@ -560,29 +530,15 @@ plot_sv_dependence <- function(v, color_var) {
 }
 
 # ------------------------------------------------------------
-# Pyranhia brand theme, matching mlstartr's app_ui.R (the reference
-# styling for Pyranhia's Shiny apps: R/app_ui.R in
-# https://github.com/pyranhia/mlstartr) rather than the Quarto site's
-# own custom.scss/notes.scss -- same bs_theme() color arguments, same
-# page_navbar() structure, and the same tags$style(HTML(...)) approach
-# for extra CSS rather than bs_add_rules() -- literal hex colors
-# throughout, no Sass variables to define first.
+# Pyranhia brand theme: colors, fonts and layout.
 #
-# One addition: the fonts are the repo's own self-hosted woff2 files
-# (assets/fonts, also used by the widgets), served as a resource path,
-# so participants' browsers get Inter/Space Grotesk without having
-# them installed and without any font CDN.
+# The fonts are self-hosted woff2 files (assets/fonts), served as a resource
+# path, so participants' browsers get Inter/Space Grotesk without having them
+# installed and without any font CDN.
 #
-# One deliberate difference from mlstartr: secondary/success use
-# #007B6F (_brand.yml's "teal-accessible") instead of mlstartr's raw
-# #00A896. Bootstrap's Sass build computes automatic-contrast text
-# colors for things like outline buttons, and #00A896 doesn't reach a
-# 4.5:1 (WCAG AA) contrast ratio against either black or white --
-# Bootstrap warns about this at compile time (harmless, doesn't block
-# the build, but real: it means Bootstrap can't guarantee a readable
-# automatic text color on it). #007B6F is _brand.yml's own answer to
-# exactly this problem, so using it here avoids the warning without
-# introducing a new color into the palette.
+# secondary/success use the accessible teal #007B6F rather than #00A896:
+# Bootstrap computes automatic-contrast text colors, and #00A896 does not
+# reach a 4.5:1 (WCAG AA) contrast ratio against black or white.
 # ------------------------------------------------------------
 
 # `danger` is deliberately not set: the app never uses it (the negative
@@ -604,14 +560,8 @@ pyranhia_theme <- bslib::bs_theme(
   "headings-font-weight" = 600
 )
 
-# Extra CSS beyond what bs_theme()'s arguments cover: same
-# border-radius/button/card conventions as mlstartr, adapted here to
-# the elements this app actually has (no .card-pedagogique/.card-autre
-# since this app doesn't use cards, but the border-radius and
-# btn-primary/btn-success color+hover treatment carry over as-is for
-# visual consistency with mlstartr and the rest of the Pyranhia Shiny
-# apps). Colors match the accessible teal above, not mlstartr's raw
-# #00A896, for the same contrast reason.
+# Extra CSS beyond what bs_theme() covers: border radius, button colors and
+# hover, using the accessible teal above.
 pyranhia_css <- tags$style(HTML(
   "
   /* Titre de l'app */
@@ -859,8 +809,7 @@ server <- function(input, output, session) {
   # precomputed sample of 1000 test-set observations (not the 12
   # dropdown ones), giving a global view of the model rather than an
   # explanation of the currently-selected observation -- so it doesn't
-  # depend on input$obs_id at all, same as jour_3's own summary plot
-  # isn't tied to a single observation either. Same for the shapviz tab.
+  # depend on input$obs_id at all. Same for the shapviz tab.
 
   observeEvent(input$main_nav, {
     toggle_sidebar(

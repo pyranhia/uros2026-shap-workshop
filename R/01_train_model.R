@@ -1,15 +1,19 @@
 # ============================================================
 # 01_train_model.R
 #
-# Prepare the Adult dataset (income prediction) and train a
-# gradient boosting model (LightGBM) with tidymodels.
+# Prepare the Adult dataset (income prediction) and train a gradient
+# boosting model (LightGBM) with tidymodels.
 #
-# This script is meant to be shared with tutorial participants:
-# it shows the full workflow from raw data to a fitted model,
-# so they can see exactly how the model used later for SHAP
-# explanations was built.
+# OPTIONAL: not needed during the tutorial, the trained model and the
+# train/test sets are already in the repository. This script shows the full
+# workflow from raw data to the fitted model, out of curiosity. To run it you
+# need the `datapyranhia` package (Adult dataset), which is not part of the
+# pinned environment:
+#   install.packages("pak"); pak::pak("pyranhia/datapyranhia")
+# Running it overwrites the three files below.
 #
-# Output: models/gbm_adult.rds (fitted tidymodels workflow)
+# Output: models/gbm_adult.rds (fitted tidymodels workflow),
+#         data/processed/adult_train.rds, data/processed/adult_test.rds
 # ============================================================
 
 library(tidyverse)
@@ -119,7 +123,7 @@ recall(
 
 # ------------------------------------------------------------
 # 6. Save the fitted model for downstream scripts
-#    (the SHAP computation scripts read these files)
+#    (the exercises and the demo app read these files)
 # ------------------------------------------------------------
 
 saveRDS(final_fit, here("models", "gbm_adult.rds"))
