@@ -1448,43 +1448,6 @@
       "Maintainer": "Tyson Barrett <t.barrett88@gmail.com>",
       "Repository": "https://packagemanager.posit.co/cran/latest"
     },
-    "datapyranhia": {
-      "Package": "datapyranhia",
-      "Version": "0.0.0.9000",
-      "Source": "GitHub",
-      "Title": "Jeu de données pour les formations Pyranhia",
-      "Authors@R": "person(\"Thelma\", \"Panaïotis\", email = \"thelmapana@proton.me\", role = c(\"aut\", \"cre\"))",
-      "Description": "Ce package fournit des jeux de données utilisés dans les formations Pyranhia, facilitant l'apprentissage et la manipulation de données en R.",
-      "License": "MIT + file LICENSE",
-      "Encoding": "UTF-8",
-      "Roxygen": "list(markdown = TRUE)",
-      "RoxygenNote": "7.3.3",
-      "Imports": [
-        "abind",
-        "reticulate",
-        "tibble"
-      ],
-      "Depends": [
-        "R (>= 4.1.0)"
-      ],
-      "LazyData": "true",
-      "LazyDataCompression": "xz",
-      "Suggests": [
-        "keras3",
-        "tensorflow",
-        "tfdatasets"
-      ],
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "datapyranhia",
-      "RemoteUsername": "pyranhia",
-      "RemotePkgRef": "pyranhia/datapyranhia",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "3a7755fe3995fff7153c89d95cedcfd457e48998",
-      "NeedsCompilation": "no",
-      "Author": "Thelma Panaïotis [aut, cre]",
-      "Maintainer": "Thelma Panaïotis <thelmapana@proton.me>"
-    },
     "dbplyr": {
       "Package": "dbplyr",
       "Version": "2.6.0",

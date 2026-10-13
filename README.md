@@ -16,30 +16,28 @@ You need **R 4.6 or later** and RStudio. The install takes a few minutes: do it 
 git clone https://github.com/pyranhia/uros2026-shap-workshop.git
 ```
 
-Open `tutoriel_SHAP_uRos2026.Rproj` in RStudio (**File > Open Project...**), then in the R Console:
+Open `uros2026-shap-workshop.Rproj` in RStudio (**File > Open Project...**), then in the R Console:
 
 ```r
-install.packages("pak")
-pak::pak("pyranhia/datapyranhia")  # data package, GitHub only (not on CRAN)
-renv::restore()                    # all other packages, pinned versions
+renv::restore()  # installs all packages at the pinned versions
 ```
 
-The order matters: `renv::restore()` alone cannot install `datapyranhia`. You are done when you see `The library is already synchronized with the lockfile.`
+You are done when you see `The library is already synchronized with the lockfile.`
 
 Test it: run the setup part of `R/02_shap_exercises.R` without error, then open `app/shiny_demo/app.R` and click **Run App**.
 
-If `pak::pak()` fails with a GitHub rate-limit or authentication error, set up a [GitHub personal access token](https://happygitwithr.com/https-pat). If you cannot sort it out quickly, use Option B.
+If the install fails and you cannot sort it out quickly, use Option B.
 
 ### Option B: on the RStudio Server
 
-Nothing to install. Usernames and passwords are handed out at the start of the session. Go to [rstudio.pyranhia.eu](https://rstudio.pyranhia.eu), sign in, and open `tutoriel_SHAP_uRos2026.Rproj` from the **Files** tab: the repository and the environment are already there. Do not run the demo app from the server: a dedicated instance is used for it, its address will be given during the session.
+Nothing to install. Usernames and passwords are handed out at the start of the session. Go to [rstudio.pyranhia.eu](https://rstudio.pyranhia.eu), sign in, and open `uros2026-shap-workshop.Rproj` from the **Files** tab: the repository and the environment are already there. Do not run the demo app from the server: a dedicated instance is used for it, its address will be given during the session.
 
 ## Repository content
 
 ```
 ├── R/
 │   ├── 02_shap_exercises.R   # the hands-on exercises: start here
-│   └── 01_train_model.R      # how the model and the train/test sets were made
+│   └── 01_train_model.R      # optional: how the model was trained (see below)
 ├── app/shiny_demo/           # demo Shiny app (Run App)
 ├── data/processed/           # train/test sets and precomputed SHAP values
 ├── models/                   # trained LightGBM model
@@ -47,9 +45,20 @@ Nothing to install. Usernames and passwords are handed out at the start of the s
 └── renv.lock                 # pinned R environment
 ```
 
+## Optional: how the model was trained
+
+`R/01_train_model.R` shows how the model and the train/test sets were made. It is there out of curiosity: you do **not** need it for the session, the trained model and the data are already in the repository. If you want to run it, you also need the `datapyranhia` package (the Adult dataset), which is hosted on GitHub and not part of the pinned environment:
+
+```r
+install.packages("pak")
+pak::pak("pyranhia/datapyranhia")
+```
+
+Running the script overwrites `models/gbm_adult.rds` and the train/test sets.
+
 ## Data
 
-The model is trained on the Adult income dataset, shipped in the [datapyranhia](https://github.com/pyranhia/datapyranhia) package. The dataset is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The model is trained on the Adult income dataset (UCI Machine Learning Repository), available in the `datapyranhia` package. The train/test sets in `data/processed/` are derived from it. The dataset is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 > Becker, B. & Kohavi, R. (1996). Adult [Dataset]. UCI Machine Learning Repository. <https://doi.org/10.24432/C5XW20>
 
