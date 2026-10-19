@@ -716,18 +716,8 @@ ui <- page_navbar(
     "SHAP summary",
     navset_pill(
       nav_panel(
-        "All variables (continuous)",
+        "All continuous variables",
         plot_fit("plot_summary_continuous", offset = 160)
-      ),
-      nav_panel(
-        "One variable",
-        selectInput(
-          "summary_var",
-          "Variable:",
-          choices = summary_var_choices,
-          width = "500px"
-        ),
-        plot_fit("plot_summary_one", offset = 240)
       ),
       nav_panel(
         "All categorical variables",
@@ -738,6 +728,16 @@ ui <- page_navbar(
         # Height grows with the number of categorical variables
         # (see the renderPlot height function in the server).
         plotOutput("plot_summary_all_discrete", height = "auto")
+      ),
+      nav_panel(
+        "One variable",
+        selectInput(
+          "summary_var",
+          "Variable:",
+          choices = summary_var_choices,
+          width = "500px"
+        ),
+        plot_fit("plot_summary_one", offset = 240)
       )
     )
   ),

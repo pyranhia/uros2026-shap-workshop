@@ -1,86 +1,168 @@
 # SHAP exercises: write your own code
-# Same progression and same exercises as the course notes (hints are in
-# the notes, in the collapsible "Hint" blocks), on an observation of your
-# own choosing:
-#   1. break-down (one fixed order)
-#   2. SHAP waterfall (one observation, averaged over all orders)
-#   3. SHAP values of one observation, in the format of the SHAP summary
-#   4. the fast route: TreeSHAP with shapviz
+# Same parts, same order and same exercises as the slides and the course notes
+# (the hints are there). Fill in the slots marked <Your code here>; the pieces
+# that are given are announced in the slides.
+#   Part 0. Explainer and two contrasted people
+#   Part 1. Break-down
+#   Part 2. SHAP values by hand
+#   Part 3. SHAP values with DALEX
+#   Part 4. From local to global (precomputed SHAP values)
+#   Part 5. TreeSHAP with shapviz
 #
 # The model is already trained (see 01_train_model.R): nothing to refit.
-# Parts 1-3 use DALEX::predict_parts() (predicted-probability scale),
-# Part 4 uses shapviz (log-odds scale): same idea, two computational
-# routes. See "Going faster with shapviz and TreeSHAP" in the notes.
+# Parts 0 to 4 are on the predicted-probability scale, Part 5 (shapviz) is on
+# the log-odds scale: same idea, two computational routes.
 
 library(tidymodels)
 library(bonsai)
 library(DALEXtra)
 library(shapviz)
+library(forcats)
 library(here)
-
-
-## Setup: load the model and the data, build the explainer ----
-#--------------------------------------------------------------------------#
 
 gbm_fit <- readRDS(here("models", "gbm_adult.rds"))
 adult_test <- readRDS(here("data", "processed", "adult_test.rds"))
 
-# Build the DALEX explainer (same as "Build your explainer" in the "Setup"
-# section of the notes): no y, and a random sample of 500 rows as reference
-# data to keep predict_parts() fast (your numbers will differ slightly from
-# those of the notes: the sample is random)
+
+## Part 0. Warm-up: explainer and two contrasted people ----
+#--------------------------------------------------------------------------#
+
+# a) Build the DALEX explainer with explain_tidymodels(): the model and the
+#    test set without the target, a random sample of 500 rows as reference
+#    data to keep the computation fast (your numbers will differ slightly
+#    from your neighbour's: the sample is random)
+# <Your code here>
+
+# b) Predict the probability of income >50K for the first 30 rows of the test
+#    set, sorted, and keep the row number of one person with a LOW
+#    probability and one with a HIGH probability
+# <Your code here>
+
+low_id <- NA # <- the row number of your LOW person
+high_id <- NA # <- the row number of your HIGH person
+
+# Given: your two people, used in all the following parts
+my_low <- adult_test |> slice(low_id)
+my_high <- adult_test |> slice(high_id)
+
+# c) Average prediction on the reference data: where do your two people
+#    stand?
 # <Your code here>
 
 
 ## Part 1. Break-down ----
 #--------------------------------------------------------------------------#
 
-# a) Pick ONE observation (a row of adult_test) you find interesting
+# a) Compute and plot the break-down of my_low and my_high
 # <Your code here>
 
-# b) Compute and plot its break-down
+# b) The same break-down of my_low, with the variables added in a random
+#    order. Run it twice: do the contributions change?
+vars <- setdiff(names(adult_test), "income") # given: the 12 predictors
 # <Your code here>
 
 
-## Part 2. SHAP waterfall (individual) ----
+## Part 2. SHAP values by hand ----
 #--------------------------------------------------------------------------#
 
-# Compute and plot the SHAP waterfall of the same observation, and
-# compare it with its break-down (takes about 15 seconds)
+# a) Complete the skeleton: 10 break-downs of my_low, each with a random
+#    order, stacked in one data frame
+bd_10_orders <- map(1:10, \(i) {
+  predict_parts(
+    explainer = explainer,
+    new_observation = NULL, # <Your code here>
+    type = "break_down",
+    order = NULL # <Your code here>
+  ) |>
+    as_tibble()
+}) |>
+  list_rbind()
+
+# b) Average the contribution of each variable over the 10 orders: your SHAP
+#    values, computed by hand. Name the result shap_by_hand (Part 3 uses it)
 # <Your code here>
 
 
-## Part 3. From one observation to the SHAP summary ----
+## Part 3. SHAP values with DALEX ----
 #--------------------------------------------------------------------------#
 
-# predict_parts(type = "shap") takes SEVERAL MINUTES per observation with the
-# whole test set as reference, so the values for 1000 observations were
-# precomputed (see the notes).
+# a) Compute the SHAP values of my_low (about 15 seconds) and plot the
+#    waterfall, with max_features = 10
+# <Your code here>
 
-# Compute the SHAP values of ONE observation (your Part 1 one) and look
-# at how the result is structured: the rows with B == 0 are the averaged
-# contributions, the format stored in the precomputed summary
+# b) Compare with your values by hand: close? Why not identical?
+#    Keep the rows with B == 0 (the averages over the orderings), then join
+#    them with shap_by_hand
+# <Your code here>
+
+# c) Bonus, additivity: average prediction + sum of the SHAP values =
+#    prediction of my_low?
 # <Your code here>
 
 
-## Part 4. The fast route: TreeSHAP with shapviz ----
+## Part 4. From local to global ----
 #--------------------------------------------------------------------------#
 
-# Exact (not sampled) and vectorized, on the log-odds scale: don't expect
-# the numbers to match Parts 1-3, only the general story.
+# Given: the SHAP values precomputed for 1000 observations (DALEX would take
+# more than 24 hours): one row per variable and per observation (obs_id,
+# variable_name, variable_value, contribution)
+shap_summary <- readRDS(here("data", "processed", "shap_values.rds"))$shap_summary |>
+  as_tibble()
 
-# a) Build the sv object for the whole test set (X, X_pred, booster,
-#    shapviz()). Beware: as.factor() on the test set is a trap, use the
-#    fitted recipe
+# a) Global importance: the mean absolute SHAP value of each variable, as a
+#    sorted bar chart
 # <Your code here>
 
-# b) Beeswarm of the whole test set (time it if you are curious)
+# b) The effect of age: the SHAP value of age against the value of age, one
+#    point per observation
 # <Your code here>
 
-# c) Dependence plot of a variable of your choice
+# c) Bonus, a beeswarm: the four continuous variables on one plot. Complete
+#    the skeleton, in three steps
+shap_summary |>
+  # 1. keep the four continuous variables: age, capital_gain, capital_loss,
+  #    hours_per_week
+  # <Your code here>
+  # 2. rescale the values of each variable between 0 and 1 (value_scaled)
+  # <Your code here>
+  ggplot() +
+  # 3. one jittered point per observation: x = contribution,
+  #    colour = value_scaled
+  geom_jitter(
+    aes(y = variable_name), # <Your code here>
+    height = 0.1,
+    alpha = 0.5
+  ) +
+  scale_colour_gradient2(
+    low = "#4575b4",
+    mid = "#ffffbf",
+    high = "#d73027",
+    midpoint = 0.5
+  )
+
+
+## Part 5. TreeSHAP with shapviz ----
+#--------------------------------------------------------------------------#
+
+# a) Given: just run it. TreeSHAP values of every row of the test set, in one
+#    call. How long does it take, compared with one DALEX waterfall?
+X <- extract_recipe(gbm_fit) |>
+  bake(new_data = adult_test, all_predictors())
+X_pred <- bonsai:::prepare_df_lgbm(X)
+lgb_booster <- extract_fit_engine(gbm_fit)
+sv <- shapviz(lgb_booster, X_pred = X_pred, X = X)
+
+# b) Beeswarm of the whole test set: same story as your DALEX beeswarm?
 # <Your code here>
 
-# d) Bonus, check and explain: check that baseline + sum of SHAP values
-#    reproduces the model's predictions, then draw the waterfall of your
-#    Part 1 observation
+# c) Dependence plot of sex, then coloured by relationship: what do you see?
+#    Then draw the dependence plot of a variable of your choice
+# <Your code here>
+
+# d) Bonus, check and explain: baseline + sum of the SHAP values = the
+#    model's prediction (once through plogis())? Print the largest absolute
+#    gap
+# <Your code here>
+
+#    Then draw the TreeSHAP waterfall of my_low
 # <Your code here>

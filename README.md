@@ -2,7 +2,7 @@
 
 Hands-on tutorial given by Thelma Panaïotis ([Pyranhia](https://pyranhia.eu)) at **uRos2026** (Use of R in Official Statistics), Paris, 18 November 2026.
 
-This repository contains what you need to code along during the session: the exercise script, the trained model, the data, a demo Shiny app and the pinned R environment. The slides and course notes are shared separately.
+This repository contains what you need to code along during the session: the exercise script, the trained model, the data, a demo Shiny app and the pinned R environment. The slides, course notes and setup guide are on the tutorial website: [shap-uros2026.pyranhia.eu](https://shap-uros2026.pyranhia.eu).
 
 **Prerequisites:** intermediate R, tidyverse, basic ML concepts (train/test split, model fitting). No prior knowledge of SHAP is required.
 
@@ -30,7 +30,7 @@ If the install fails and you cannot sort it out quickly, use Option B.
 
 ### Option B: on the RStudio Server
 
-Nothing to install. Usernames and passwords are handed out at the start of the session. Go to [rstudio.pyranhia.eu](https://rstudio.pyranhia.eu), sign in, and open `uros2026-shap-workshop.Rproj` from the **Files** tab: the repository and the environment are already there. Do not run the demo app from the server: a dedicated instance is used for it, its address will be given during the session.
+Nothing to install. Usernames and passwords are handed out at the start of the session. Go to [rstudio.pyranhia.eu](https://rstudio.pyranhia.eu), sign in, and open `uros2026-shap-workshop.Rproj` from the **Files** tab: the repository and the environment are already there. Do not run the demo app from the server: use the dedicated instance, [shiny-uros2026.pyranhia.eu](https://shiny-uros2026.pyranhia.eu) (available during the session only).
 
 ## Repository content
 
