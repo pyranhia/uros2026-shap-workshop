@@ -451,6 +451,24 @@ plot_shap_all_discrete <- function(shap_summary) {
 summary_continuous_plot <- plot_shap_summary_continuous(shap_summary)
 summary_all_discrete_plot <- plot_shap_all_discrete(shap_summary)
 
+# Drawing the all-categorical plot (one ggrepel strip per variable) takes
+# about 9 s, which blocked the R process for every other session (load
+# test, 21/10/2026). It is drawn once to a PNG at startup, at twice the
+# display size for sharp rendering on high-density screens; every
+# session then only gets the file.
+ALL_DISCRETE_WIDTH <- 1200
+ALL_DISCRETE_HEIGHT <- 260 * length(discrete_vars)
+all_discrete_png <- tempfile("all_discrete_", fileext = ".png")
+ragg::agg_png(
+  all_discrete_png,
+  width = 2 * ALL_DISCRETE_WIDTH,
+  height = 2 * ALL_DISCRETE_HEIGHT,
+  res = 2 * 72,
+  background = "transparent"
+)
+print(summary_all_discrete_plot)
+invisible(dev.off())
+
 # ------------------------------------------------------------
 # shapviz tab: exact TreeSHAP on the model's native log-odds scale.
 # `sv` covers the whole test set; a fixed random subsample keeps the
@@ -725,9 +743,9 @@ ui <- page_navbar(
           class = "plot-note",
           "One strip per variable, most important first, on a common axis. Each point is one observation. Coloured and labelled: the six categories contributing most overall. Grey: all the others."
         ),
-        # Height grows with the number of categorical variables
-        # (see the renderPlot height function in the server).
-        plotOutput("plot_summary_all_discrete", height = "auto")
+        # Precomputed PNG (see all_discrete_png): scaled to the width
+        # of the tab, height follows.
+        imageOutput("plot_summary_all_discrete", height = "auto")
       ),
       nav_panel(
         "One variable",
@@ -855,12 +873,14 @@ server <- function(input, output, session) {
     bg = "transparent"
   )
 
-  output$plot_summary_all_discrete <- renderPlot(
-    {
-      summary_all_discrete_plot
-    },
-    height = function() 260 * length(discrete_vars),
-    bg = "transparent"
+  output$plot_summary_all_discrete <- renderImage(
+    list(
+      src = all_discrete_png,
+      contentType = "image/png",
+      width = "100%",
+      alt = "SHAP values of all categorical variables, one strip per variable"
+    ),
+    deleteFile = FALSE
   )
 
   output$plot_summary_one <- renderPlot(
