@@ -133,7 +133,7 @@ bd_10_orders <- map(1:10, \(i) {
 # <Your code here>
 
 # Join them with shap_by_hand and plot one against the other, with the
-# diagonal
+# diagonal and the variable names
 # <Your code here>
 
 # c) Bonus, additivity: average prediction + sum of the SHAP values =
@@ -225,18 +225,5 @@ sv <- shapviz(lgb_booster, X_pred = X_pred, X = X)
 # Dependence plot of a variable of your choice
 # <Your code here>
 
-# d) Bonus, check and explain: baseline + sum of the SHAP values = the
-#    model's prediction (once through plogis())? Print the largest absolute
-#    gap
-
-# Predicted probabilities of the model on the test set
-# <Your code here>
-
-# Baseline + sum of the SHAP values of each row, through plogis()
-# <Your code here>
-
-# Largest absolute gap
-# <Your code here>
-
-# Then draw the TreeSHAP waterfall of my_low
+# d) Bonus: the TreeSHAP waterfall of my_low
 # <Your code here>
