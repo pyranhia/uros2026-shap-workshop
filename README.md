@@ -64,4 +64,4 @@ The model is trained on the Adult income dataset (UCI Machine Learning Repositor
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+The code in this repository is licensed under the MIT License, see [LICENSE](LICENSE). The fonts in `assets/fonts/` (Inter, Space Grotesk, IBM Plex Mono) are licensed under the SIL Open Font License 1.1, see [assets/fonts/OFL.txt](assets/fonts/OFL.txt). The slides and course notes on [shap-uros2026.pyranhia.eu](https://shap-uros2026.pyranhia.eu) are licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
