@@ -57,7 +57,6 @@ my_high <- adult_test |> slice(high_id)
 #    stand?
 # <Your code here>
 
-
 ## Part 1. Break-down ----
 #--------------------------------------------------------------------------#
 
@@ -81,7 +80,6 @@ vars <- setdiff(names(adult_test), "income") # given: the 12 predictors
 
 # Plot it
 # <Your code here>
-
 
 ## Part 2. SHAP values by hand ----
 #--------------------------------------------------------------------------#
@@ -109,7 +107,6 @@ bd_10_orders <- map(1:10, \(i) {
 
 # Print the result
 # <Your code here>
-
 
 ## Part 3. SHAP values with DALEX ----
 #--------------------------------------------------------------------------#
@@ -145,14 +142,17 @@ bd_10_orders <- map(1:10, \(i) {
 # Prediction of my_low
 # <Your code here>
 
-
 ## Part 4. From local to global ----
 #--------------------------------------------------------------------------#
 
 # Given: the SHAP values precomputed for 1000 observations (DALEX would take
 # more than 24 hours): one row per variable and per observation (obs_id,
 # variable_name, variable_value, contribution)
-shap_summary <- readRDS(here("data", "processed", "shap_values.rds"))$shap_summary |>
+shap_summary <- readRDS(here(
+  "data",
+  "processed",
+  "shap_values.rds"
+))$shap_summary |>
   as_tibble()
 
 # a) Global importance: the mean absolute SHAP value of each variable, as a
@@ -189,12 +189,7 @@ shap_summary |>
     height = 0.1,
     alpha = 0.5
   ) +
-  scale_colour_gradient2(
-    low = "#4575b4",
-    mid = "#ffffbf",
-    high = "#d73027",
-    midpoint = 0.5
-  )
+  scale_colour_viridis_c()
 
 
 ## Part 5. TreeSHAP with shapviz ----

@@ -298,11 +298,7 @@ plot_shap_summary_continuous <- function(shap_summary, n_vars = 10) {
       alpha = 0.6,
       size = 2
     ) +
-    scale_color_gradient2(
-      low = "#4575b4",
-      mid = "#ffffbf",
-      high = "#d73027",
-      midpoint = 0.5,
+    scale_color_viridis_c(
       breaks = c(0, 1),
       labels = c("Low", "High"),
       name = "Feature\nvalue"
